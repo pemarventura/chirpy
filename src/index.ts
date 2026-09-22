@@ -11,7 +11,7 @@ import {
   middlewareLogResponse,
   middlewareMetricsInc,
 } from "./api/middleware.js";
-import { handleChirps, handlerChirpsRetrieve } from "./api/chirps.js";
+import { handleChirps, handlerChirpsGet, handlerChirpsRetrieve } from "./api/chirps.js";
 import { config } from "./config.js";
 import { handlerUsersCreate } from "./api/users.js";
 
@@ -22,6 +22,7 @@ const app = express();
 
 app.use(middlewareLogResponse);
 app.use(express.json());
+app.use(errorMiddleWare);
 
 app.use("/app", middlewareMetricsInc, express.static("./src/app"));
 
@@ -47,6 +48,9 @@ app.get("/api/chirps", (req, res, next) => {
   Promise.resolve(handlerChirpsRetrieve(req, res)).catch(next);
 });
 
+app.get("/api/chirps/:chirpId", (req, res, next) => {
+  Promise.resolve(handlerChirpsGet(req, res)).catch(next);
+});
 
 app.listen(config.api.port, () => {
   console.log(`Server is running at http://localhost:${config.api.port}`);
