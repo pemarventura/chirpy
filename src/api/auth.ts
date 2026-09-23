@@ -34,3 +34,4 @@ export async function handlerLogin(req: Request, res: Response) {
     updatedAt: user.updatedAt,
   } satisfies UserResponse);
 }
+
