@@ -1,6 +1,7 @@
 import argon2 from "argon2";
 import jwt from "jsonwebtoken";
-import { UserNotAuthenticatedError } from "./api/errors.js";
+import crypto from "crypto";
+import { BadRequestError, UserNotAuthenticatedError } from "./api/errors.js";
 const TOKEN_ISSUER = "chirpy";
 export async function hashPassword(password) {
     return argon2.hash(password);
@@ -41,4 +42,21 @@ export function validateJWT(tokenString, secret) {
         throw new UserNotAuthenticatedError("No user ID in token");
     }
     return decoded.sub;
+}
+export function getBearerToken(req) {
+    const authHeader = req.get("Authorization");
+    if (!authHeader) {
+        throw new BadRequestError("Malformed authorization header");
+    }
+    return extractBearerToken(authHeader);
+}
+export function extractBearerToken(header) {
+    const splitAuth = header.split(" ");
+    if (splitAuth.length < 2 || splitAuth[0] !== "Bearer") {
+        throw new BadRequestError("Malformed authorization header");
+    }
+    return splitAuth[1];
+}
+export function makeRefreshToken() {
+    return crypto.randomBytes(32).toString("hex");
 }

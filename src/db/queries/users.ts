@@ -19,3 +19,8 @@ export async function getUserByEmail(email: string) {
   const [result] = await db.select().from(users).where(eq(users.email, email));
   return result;
 }
+
+export async function getUserFromRefreshToken(userId: string) {
+  const [result] = await db.select().from(users).where(eq(users.id, userId));
+  return result;
+}
