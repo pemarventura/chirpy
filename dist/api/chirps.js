@@ -1,5 +1,5 @@
 import { respondWithJSON } from "./json.js";
-import { createChirp, deleteChirp, getChirp, getChirps, } from "../db/queries/chirps.js";
+import { createChirp, deleteChirp, getChirp, getChirps, getChirpsByAuthor, } from "../db/queries/chirps.js";
 import { BadRequestError, NotFoundError, UserForbiddenError, } from "./errors.js";
 import { getBearerToken, validateJWT } from "../auth.js";
 import { config } from "../config.js";
@@ -31,8 +31,14 @@ function getCleanedBody(body, badWords) {
     const cleaned = words.join(" ");
     return cleaned;
 }
-export async function handlerChirpsRetrieve(_, res) {
-    const chirps = await getChirps();
+export async function handlerChirpsRetrieve(req, res) {
+    const { authorId, sort } = req.query;
+    let chirps = typeof authorId === "string" && authorId.length > 0
+        ? await getChirpsByAuthor(authorId)
+        : await getChirps();
+    if (sort === "desc") {
+        chirps.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+    }
     respondWithJSON(res, 200, chirps);
 }
 export async function handlerChirpsGet(req, res) {

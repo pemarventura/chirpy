@@ -8,6 +8,9 @@ export async function createChirp(chirp) {
 export async function getChirps() {
     return db.select().from(chirps).orderBy(asc(chirps.createdAt));
 }
+export async function getChirpsByAuthor(authorId) {
+    return db.select().from(chirps).where(eq(chirps.userId, authorId)).orderBy(asc(chirps.createdAt));
+}
 export async function getChirp(id) {
     const [result] = await db.select().from(chirps).where(eq(chirps.id, id));
     return result;
