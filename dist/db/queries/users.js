@@ -20,3 +20,11 @@ export async function getUserFromRefreshToken(userId) {
     const [result] = await db.select().from(users).where(eq(users.id, userId));
     return result;
 }
+export async function updateUsers(userId, email, hashedPassword) {
+    const rows = await db
+        .update(users)
+        .set({ email: email, hashedPassword: hashedPassword, updatedAt: new Date() })
+        .where(eq(users.id, userId))
+        .returning();
+    return rows[0];
+}
