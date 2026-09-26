@@ -27,6 +27,7 @@ export async function handlerLogin(req, res) {
         updatedAt: user.updatedAt,
         token: accessToken,
         refreshToken: refreshToken,
+        isChirpyRed: user.isChirpyRed
     });
 }
 export async function handlerRefresh(req, res) {

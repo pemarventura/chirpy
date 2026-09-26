@@ -1,10 +1,10 @@
 import type { Request, Response } from "express";
 
-import { createUser, updateUser } from "../db/queries/users.js";
-import { BadRequestError } from "./errors.js";
+import { createUser, updateUser, updateUserChirpyRed } from "../db/queries/users.js";
+import { BadRequestError, NotFoundError, UserNotAuthenticatedError } from "./errors.js";
 import { respondWithJSON } from "./json.js";
 import { NewUser } from "../db/schema.js";
-import { getBearerToken, hashPassword, validateJWT } from "../auth.js";
+import { getAPIKey, getBearerToken, hashPassword, validateJWT } from "../auth.js";
 import { config } from "../config.js";
 
 export type UserResponse = Omit<NewUser, "hashedPassword">;
@@ -36,6 +36,7 @@ export async function handlerUsersCreate(req: Request, res: Response) {
     email: user.email,
     createdAt: user.createdAt,
     updatedAt: user.updatedAt,
+    isChirpyRed: user.isChirpyRed,
   } satisfies UserResponse);
 }
 
@@ -63,5 +64,38 @@ export async function handlerUsersUpdate(req: Request, res: Response) {
     createdAt: user.createdAt,
     updatedAt: user.updatedAt,
     email: user.email,
+    isChirpyRed: user.isChirpyRed,
   } satisfies UserResponse);
+}
+
+export async function handlerUpdateChirpyRed(req: Request, res: Response) {
+  type parameters = {
+    event: string;
+    data: { userId: string};
+  };
+
+  const params: parameters = req.body;
+
+  if (!params || !params.event || !params.data! || !params.data.userId) {
+    throw new BadRequestError("Missing required fields");
+  }
+
+  if (params.event !== "user.upgraded") {
+    res.status(204).send();
+    return;
+  }
+
+  const APIKey = getAPIKey(req);
+
+  if (APIKey != config.api.polkaKey) {
+    throw new UserNotAuthenticatedError("User not authenticated");
+  }
+
+  const updatedUser = await updateUserChirpyRed(params.data.userId);
+
+  if (!updatedUser) {
+    throw new NotFoundError(`User not found for the userId: ${params.data.userId}`);
+  }
+
+  res.status(204).send();
 }
