@@ -6,9 +6,9 @@ import { handlerReadiness } from "./api/readiness.js";
 import { handlerMetrics } from "./api/metrics.js";
 import { handlerReset } from "./api/reset.js";
 import { errorMiddleWare, middlewareLogResponse, middlewareMetricsInc, } from "./api/middleware.js";
-import { handlerChirpsCreate, handlerChirpsGet, handlerChirpsRetrieve, } from "./api/chirps.js";
+import { handlerChirpsCreate, handlerChirpsDelete, handlerChirpsGet, handlerChirpsRetrieve, } from "./api/chirps.js";
 import { config } from "./config.js";
-import { handlerUsersChangeCredentials, handlerUsersCreate } from "./api/users.js";
+import { handlerUsersCreate, handlerUsersUpdate } from "./api/users.js";
 import { handlerLogin, handlerRefresh, handlerRevoke } from "./api/auth.js";
 const migrationClient = postgres(config.db.url, { max: 1 });
 await migrate(drizzle(migrationClient), config.db.migrationConfig);
@@ -38,7 +38,7 @@ app.post("/api/users", (req, res, next) => {
     Promise.resolve(handlerUsersCreate(req, res)).catch(next);
 });
 app.put("/api/users", (req, res, next) => {
-    Promise.resolve(handlerUsersChangeCredentials(req, res)).catch(next);
+    Promise.resolve(handlerUsersUpdate(req, res)).catch(next);
 });
 app.post("/api/chirps", (req, res, next) => {
     Promise.resolve(handlerChirpsCreate(req, res)).catch(next);
@@ -48,6 +48,9 @@ app.get("/api/chirps", (req, res, next) => {
 });
 app.get("/api/chirps/:chirpId", (req, res, next) => {
     Promise.resolve(handlerChirpsGet(req, res)).catch(next);
+});
+app.delete("/api/chirps/:chirpId", (req, res, next) => {
+    Promise.resolve(handlerChirpsDelete(req, res)).catch(next);
 });
 app.use(errorMiddleWare);
 app.listen(config.api.port, () => {
